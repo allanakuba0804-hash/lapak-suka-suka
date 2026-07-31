@@ -34,7 +34,6 @@ self.addEventListener("push", function (event) {
 
         data: {
             url:
-                data.url ||
                 "https://allanakuba0804-hash.github.io/lapak-suka-suka/admin.html"
         }
     };
