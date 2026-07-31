@@ -1,3 +1,8 @@
+self.addEventListener("activate", function (event) {
+    event.waitUntil(
+        self.clients.claim()
+    );
+});
 self.addEventListener("push", function (event) {
 
     console.log("🔔 PUSH DITERIMA");
@@ -79,7 +84,6 @@ self.addEventListener(
                     ) {
                         return client.focus();
                     }
-
                 }
 
                 if (clients.openWindow) {
