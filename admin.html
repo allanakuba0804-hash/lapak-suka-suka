@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<style>
+.whatsapp-notification {
+    width: 360px;
+    background: #ffffff;
+    border-radius: 14px;
+    overflow: hidden;
+
+    margin-bottom: 12px;
+
+    box-shadow:
+        0 8px 30px rgba(0,0,0,0.20);
+
+    border: 1px solid #e5e7eb;
+
+    animation:
+        whatsappSlideIn 0.35s ease-out;
+}
+
+@keyframes whatsappSlideIn {
+
+    from {
+        transform: translateX(120%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+
+.wa-notif-header {
+    display: flex;
+    align-items: center;
+
+    padding: 12px 14px;
+
+    background: #075e54;
+
+    color: white;
+}
+
+
+.wa-avatar {
+    width: 42px;
+    height: 42px;
+
+    border-radius: 50%;
+
+    background: white;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 22px;
+
+    margin-right: 10px;
+}
+
+
+.wa-title {
+    flex: 1;
+}
+
+
+.wa-name {
+    font-weight: 700;
+    font-size: 15px;
+}
+
+
+.wa-time {
+    font-size: 11px;
+    opacity: 0.85;
+
+    margin-top: 2px;
+}
+
+
+.wa-close {
+    border: none;
+    background: transparent;
+
+    color: white;
+
+    font-size: 24px;
+
+    cursor: pointer;
+
+    line-height: 1;
+}
+
+
+.wa-notif-body {
+    padding: 15px 16px;
+}
+
+
+.wa-new-order {
+    font-size: 15px;
+    font-weight: 800;
+
+    color: #075e54;
+
+    margin-bottom: 8px;
+}
+
+
+.wa-customer {
+    font-size: 15px;
+
+    font-weight: 600;
+
+    color: #111827;
+}
+
+
+.wa-order-code {
+    font-size: 12px;
+
+    color: #64748b;
+
+    margin-top: 4px;
+}
+
+
+.wa-total {
+    font-size: 17px;
+
+    font-weight: 800;
+
+    color: #16a34a;
+
+    margin-top: 8px;
+}
+
+
+.wa-notif-footer {
+    padding: 10px 16px;
+
+    border-top: 1px solid #e5e7eb;
+
+    text-align: right;
+}
+
+
+.wa-button {
+    border: none;
+
+    background: #25d366;
+
+    color: white;
+
+    font-weight: 700;
+
+    padding: 7px 16px;
+
+    border-radius: 8px;
+
+    cursor: pointer;
+}
+
+
+.wa-button:hover {
+    background: #128c7e;
+}
+</style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Dashboard Admin</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+</head>
+
+<body class="bg-slate-100">
+<div
+    id="notification-container"
+    style="
+        position: fixed;
+        right: 20px;
+        bottom: 20px;
+        z-index: 2147483647;
+        width: 360px;
+        pointer-events: auto;
+    "
+></div>
+<div class="max-w-6xl mx-auto p-8">
+<div class="flex justify-between items-center mb-6">
+
+    <h1 class="text-3xl font-bold">
+        Dashboard Admin
+    </h1>
+
+    <button
+        onclick="enableNotifications()"
+        class="bg-green-600 hover:bg-green-700 text-white font-bold px-4 py-2 rounded-lg"
+    >
+        🔔 Aktifkan Notifikasi
+    </button>
+    <button
+        onclick="logoutAdmin()"
+        class="bg-red-500 hover:bg-red-600 text-white font-bold px-4 py-2 rounded-lg"
+    >
+        Logout
+    </button>
+</div>
+
+<div class="bg-white rounded-xl shadow">
+
+<table class="w-full border-collapse">
+
+<thead>
+        <tr>
+            <th>Nama</th>
+            <th>WA</th>
+            <th>Total</th>
+            <th>Status</th>
+            <th>Bukti</th>
+        </tr>
+    </thead>
+    <!-- TAMBAHKAN INI -->
+    <tbody id="orders-body">
+    </tbody>
+
+</table>
+
+</div>
+
+</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script>
+        const SUPABASE_URL = "https://ojxmzdyrlvvgmffrcivo.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_8lY-whuj_jAyd1BY6CxbqQ__tUwQaqF";
+
+        const client = supabase.createClient(
+            SUPABASE_URL,
+            SUPABASE_KEY
+        );
+        const VAPID_PUBLIC_KEY =
+    "BHLdFonIL2SeGdocKE6Dv5gKzqwmx_Wj0bg8HnruRk4aayGU_-vqgTHqVhC67KvpQ1F0XCLY8bT7-toWvG8SVtA";
+        // ===============================
+        // SERVICE WORKER NOTIFICATION
+        // ===============================
+
+        async function registerPushServiceWorker() {
+
+    if (!("serviceWorker" in navigator)) {
+
+        console.error(
+            "❌ Browser tidak mendukung Service Worker"
+        );
+
+        return null;
+    }
+
+    try {
+
+        const registration =
+            await navigator.serviceWorker.register(
+                "./sw.js"
+            );
+
+        console.log(
+            "✅ SERVICE WORKER TERDAFTAR:",
+            registration
+        );
+
+        return registration;
+
+    } catch (error) {
+
+        console.error(
+            "❌ GAGAL DAFTAR SERVICE WORKER:",
+            error
+        );
+
+        return null;
+    }
+}
+        let adminReady = false;
+        let dashboardOpenedAt = new Date().toISOString();
+        // ===============================
+        // CEK LOGIN ADMIN
+        // ===============================
+        async function checkAdminLogin() {
+
+            const {
+                data: { session }
+            } = await client.auth.getSession();
+
+            if (!session) {
+                window.location.href = "login.html";
+                return false;
+            }
+
+            console.log("ADMIN LOGIN:", session.user.email);
+
+            return true;
+        }
+        // ===============================
+        // KELUAR
+        // ===============================
+        async function logoutAdmin() {
+
+            await client.auth.signOut();
+
+            window.location.href = "login.html";
+        }
+        console.log(client);
+     // ===============================
+    // AKTIFKAN NOTIFIKASI
+    // ===============================
+
+async function enableNotifications() {
+
+    if (!("Notification" in window)) {
+        alert("Browser ini tidak mendukung notifikasi.");
+        return;
+    }
+
+    const permission =
+        await Notification.requestPermission();
+
+    console.log(
+        "Notification permission:",
+        permission
+    );
+
+    if (permission !== "granted") {
+        alert("❌ Izin notifikasi ditolak.");
+        return;
+    }
+
+    const registration =
+        await registerPushServiceWorker();
+
+    if (!registration) {
+        alert("❌ Service Worker gagal didaftarkan.");
+        return;
+    }
+
+    try {
+
+        let subscription =
+            await registration.pushManager.getSubscription();
+
+        if (!subscription) {
+
+            subscription =
+                await registration.pushManager.subscribe({
+
+                    userVisibleOnly: true,
+
+                    applicationServerKey:
+                        urlBase64ToUint8Array(
+                            VAPID_PUBLIC_KEY
+                        )
+                });
+        }
+
+        console.log(
+            "✅ PUSH SUBSCRIPTION:",
+            subscription
+        );
+        const subscriptionJson =
+    subscription.toJSON();
+
+const { data, error } =
+    await client
+        .from("push_subscriptions")
+        .upsert(
+            {
+                endpoint:
+                    subscriptionJson.endpoint,
+
+                p256dh:
+                    subscriptionJson.keys.p256dh,
+
+                auth:
+                    subscriptionJson.keys.auth,
+
+                updated_at:
+                    new Date().toISOString()
+            },
+            {
+                onConflict: "endpoint"
+            }
+        )
+        .select();
+
+if (error) {
+
+    console.error(
+        "❌ GAGAL SIMPAN SUBSCRIPTION:",
+        error
+    );
+
+    alert(
+        "❌ Subscription gagal disimpan ke Supabase."
+    );
+
+    return;
+}
+
+console.log(
+    "✅ SUBSCRIPTION TERSIMPAN:",
+    data
+);
+
+alert(
+    "✅ Notifikasi admin berhasil didaftarkan!"
+);
+
+        alert(
+            "✅ Notifikasi berhasil diaktifkan!"
+        );
+
+    } catch (error) {
+
+        console.error(
+            "❌ GAGAL MEMBUAT PUSH SUBSCRIPTION:",
+            error
+        );
+
+        alert(
+            "❌ Gagal mengaktifkan push notification."
+        );
+    }
+}
+        // ===============================
+        // CONVERTER VAPID KEY
+        // ===============================
+
+        function urlBase64ToUint8Array(base64String) {
+
+            const padding =
+                "=".repeat(
+                    (4 - base64String.length % 4) % 4
+                );
+
+            const base64 =
+                (base64String + padding)
+                    .replace(/-/g, "+")
+                    .replace(/_/g, "/");
+
+            const rawData =
+                window.atob(base64);
+
+            return Uint8Array.from(
+                [...rawData].map(
+                    char => char.charCodeAt(0)
+                )
+            );
+        }
+        // ↓ Tambahkan fungsi di bawah sini
+        async function loadOrders() {
+            const { data, error } = await client
+                .from("orders")
+                .select("*")
+                .order("created_at", { ascending: false });
+
+            if (error) {
+                console.error(error);
+                return;
+            }
+
+            const tbody = document.getElementById("orders-body");
+            tbody.innerHTML = "";
+
+            data.forEach(order => {
+                console.log(order); // tambahkan ini
+
+            tbody.innerHTML += `
+                <tr class="border-t">
+                    <td class="p-2">${order.customer_name}</td>
+                    <td class="p-2">${order.phone}</td>
+                    <td class="p-2">Rp ${Number(order.total).toLocaleString("id-ID")}</td>
+
+                    <td class="p-2">
+                        <select
+                            onchange="updateStatus(${order.id}, this.value)"
+                            class="border rounded px-2 py-1"
+                        >
+                            <option value="Pending" ${order.status=="Pending"?"selected":""}>Pending</option>
+                            <option value="Diproses" ${order.status=="Diproses"?"selected":""}>Diproses</option>
+                            <option value="Dikirim" ${order.status=="Dikirim"?"selected":""}>Dikirim</option>
+                            <option value="Selesai" ${order.status=="Selesai"?"selected":""}>Selesai</option>
+                        </select>
+                    </td>
+
+                    <td class="p-2">
+                        <a href="${order.proof_image}" target="_blank">
+                            <img src="${order.proof_image}" width="60">
+                        </a>
+                    </td>
+                                <td class="p-2">
+                <button
+                    onclick="deleteOrder(${order.id})"
+                    class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg">
+                    Hapus
+                </button>
+            </td>
+                </tr>
+            `;
+            });
+        }
+
+        async function deleteOrder(orderId) {
+
+            const yakin = confirm("Yakin ingin menghapus pesanan ini?");
+
+            if (!yakin) {
+                return;
+            }
+
+            console.log("Mencoba hapus order:", orderId);
+
+            const { data, error } = await client
+                .from("orders")
+                .delete()
+                .eq("id", orderId)
+                .select();
+
+            console.log("DATA DELETE:", data);
+            console.log("ERROR DELETE:", error);
+
+            if (error) {
+                alert("Gagal menghapus: " + error.message);
+                return;
+            }
+
+            if (!data || data.length === 0) {
+                alert("Pesanan tidak terhapus. Kemungkinan terkena RLS policy.");
+                return;
+            }
+
+            alert("Pesanan berhasil dihapus.");
+
+            loadOrders();
+        }
+        // Tambahkan di bawah sini
+        async function updateStatus(id, status) {
+
+            const { data, error } = await client
+                .from("orders")
+                .update({ status: status })
+                .eq("id", id)
+                .select();
+
+            console.log("DATA UPDATE:", data);
+            console.log("ERROR UPDATE:", error);
+
+            if (error) {
+                alert(error.message);
+                return;
+            }
+
+            loadOrders();
+        }
+function showNewOrderNotification(order) {
+
+    console.log("🔥 NOTIF WHATSAPP:", order);
+
+    const container =
+        document.getElementById("notification-container");
+
+    if (!container) {
+        console.error("❌ notification-container tidak ditemukan!");
+        return;
+    }
+
+    const nama = order.customer_name || "Customer";
+    const kode = order.order_code || "-";
+
+    const total = Number(order.total || 0)
+        .toLocaleString("id-ID");
+
+    const waktu = new Date()
+        .toLocaleTimeString("id-ID", {
+            hour: "2-digit",
+            minute: "2-digit"
+        });
+
+    const notif = document.createElement("div");
+
+    notif.className = "whatsapp-notification";
+
+    notif.innerHTML = `
+
+        <div class="wa-notif-header">
+
+            <div class="wa-avatar">
+                🛍️
+            </div>
+
+            <div class="wa-title">
+
+                <div class="wa-name">
+                    Lapak Suka Suka
+                </div>
+
+                <div class="wa-time">
+                    Pesanan baru • ${waktu}
+                </div>
+
+            </div>
+
+            <button
+                class="wa-close"
+                onclick="this.closest('.whatsapp-notification').remove()"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <div class="wa-notif-body">
+
+            <div class="wa-new-order">
+                🔔 Pesanan Baru
+            </div>
+
+            <div class="wa-customer">
+                ${nama}
+            </div>
+
+            <div class="wa-order-code">
+                ${kode}
+            </div>
+
+            <div class="wa-total">
+                Rp ${total}
+            </div>
+
+        </div>
+
+
+        <div class="wa-notif-footer">
+
+            <button
+                onclick="this.closest('.whatsapp-notification').remove()"
+                class="wa-button"
+            >
+                Tutup
+            </button>
+
+        </div>
+    `;
+
+    container.appendChild(notif);
+
+    console.log("✅ NOTIF WHATSAPP DITAMPILKAN");
+
+    setTimeout(() => {
+
+        if (notif.parentElement) {
+            notif.remove();
+        }
+
+    }, 10000);
+}
+        // ===============================
+        // CEK LOGIN ADMIN
+        // ===============================
+        checkAdminLogin().then((isLoggedIn) => {
+
+    if (!isLoggedIn) {
+        return;
+    }
+    // Load pesanan setelah login berhasil
+    loadOrders();
+
+// ===== REALTIME ORDERS + NOTIFIKASI =====
+        client
+            .channel("admin-orders")
+            .on(
+                "postgres_changes",
+                {
+                    event: "INSERT",
+                    schema: "public",
+                    table: "orders"
+                },
+                (payload) => {
+
+                    console.log("PESANAN BARU:", payload);
+
+                    loadOrders();
+
+                    const order = payload.new;
+
+                    if (adminReady) {
+
+                        console.log("🔥 ADMIN READY - MENAMPILKAN NOTIF");
+
+                        showNewOrderNotification(order);
+
+                    } else {
+
+                        console.log("❌ ADMIN BELUM READY");
+                    }
+                }
+            )
+            .on(
+                "postgres_changes",
+                {
+                    event: "UPDATE",
+                    schema: "public",
+                    table: "orders"
+                },
+                (payload) => {
+
+                    console.log("PESANAN DIUPDATE:", payload);
+
+                    loadOrders();
+                }
+            )
+            .on(
+                "postgres_changes",
+                {
+                    event: "DELETE",
+                    schema: "public",
+                    table: "orders"
+                },
+                (payload) => {
+
+                    console.log("PESANAN DIHAPUS:", payload);
+
+                    loadOrders();
+                }
+            )
+        .subscribe((status) => {
+
+            console.log("REALTIME STATUS:", status);
+
+            if (status === "SUBSCRIBED") {
+                adminReady = true;
+
+                console.log(
+                    "✅ ADMIN SIAP MENERIMA NOTIFIKASI PESANAN BARU"
+                );
+            }
+        });
+        });
+</script>
+</body>
+</html>

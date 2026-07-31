@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Status Pesanan</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body class="bg-gray-100">
+
+<div class="max-w-lg mx-auto mt-10 bg-white p-6 rounded-xl shadow">
+
+    <h1 class="text-2xl font-bold text-center mb-6">
+        Cek Status Pesanan
+    </h1>
+
+    <input
+        type="text"
+        id="orderCode"
+        placeholder="Masukkan Nomor Pesanan"
+        class="w-full border rounded-lg p-3"
+    >
+
+    <button
+        onclick="cekStatus()"
+        class="w-full mt-4 bg-green-600 text-white p-3 rounded-lg"
+    >
+        Cek Status
+    </button>
+
+    <div
+        id="hasil"
+        class="mt-6 hidden border rounded-lg p-4 bg-gray-50"
+    >
+        <p><b>Nomor Pesanan :</b> <span id="kode"></span></p>
+        <p><b>Nama :</b> <span id="nama"></span></p>
+        <p><b>No HP :</b> <span id="hp"></span></p>
+        <p><b>Total :</b> Rp <span id="total"></span></p>
+        <p><b>Pembayaran :</b> <span id="payment"></span></p>
+        <p><b>Status :</b>
+            <span
+                id="status"
+                class="font-bold text-green-600"
+            ></span>
+        </p>
+    </div>
+
+</div>
+
+<script>
+
+const SUPABASE_URL = "https://ojxmzdyrlvvgmffrcivo.supabase.co";
+const SUPABASE_KEY = "sb_publishable_8lY-whuj_jAyd1BY6CxbqQ__tUwQaqF";
+
+const client = supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
+        // Variabel baru
+        let realtimeChannel = null;
+        let currentOrderCode = "";
+async function cekStatus() {
+
+    const kode = document.getElementById("orderCode").value.trim();
+
+    const { data, error } = await client
+        .from("orders")
+        .select("*")
+        .eq("order_code", kode);
+
+    if (error || !data || data.length === 0) {
+        alert("Nomor pesanan tidak ditemukan");
+        return;
+    }
+
+    // Ambil data pesanan pertama
+    const order = data[0];
+    currentOrderCode = order.order_code;
+    // Tampilkan hasil
+    document.getElementById("hasil").classList.remove("hidden");
+
+    document.getElementById("kode").innerText = order.order_code;
+    document.getElementById("nama").innerText = order.customer_name;
+    document.getElementById("hp").innerText = order.phone;
+    document.getElementById("payment").innerText = order.payment_method;
+    document.getElementById("total").innerText =
+        Number(order.total).toLocaleString("id-ID");
+    document.getElementById("status").innerText = order.status;
+    startRealtime();
+}
+// ===============================
+// Realtime
+// ===============================
+function startRealtime() {
+
+    if (realtimeChannel) {
+        client.removeChannel(realtimeChannel);
+    }
+
+    realtimeChannel = client
+        .channel("orders-status")
+        .on(
+            "postgres_changes",
+            {
+                event: "UPDATE",
+                schema: "public",
+                table: "orders"
+            },
+            (payload) => {
+
+                if (payload.new.order_code === currentOrderCode) {
+
+                    document.getElementById("status").innerText =
+                        payload.new.status;
+
+                }
+
+            }
+        )
+        .subscribe();
+}
+</script>
+</body>
+</html>
