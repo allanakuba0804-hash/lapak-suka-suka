@@ -59,6 +59,11 @@ self.addEventListener(
         const adminUrl =
             "https://allanakuba0804-hash.github.io/lapak-suka-suka/admin.html";
 
+        console.log(
+            "🔗 MEMBUKA ADMIN ONLINE:",
+            adminUrl
+        );
+
         event.waitUntil(
 
             clients.matchAll({
@@ -69,9 +74,7 @@ self.addEventListener(
                 for (const client of clientList) {
 
                     if (
-                        client.url.includes(
-                            "allanakuba0804-hash.github.io/lapak-suka-suka/admin.html"
-                        ) &&
+                        client.url.includes("/lapak-suka-suka/admin.html") &&
                         "focus" in client
                     ) {
                         return client.focus();
