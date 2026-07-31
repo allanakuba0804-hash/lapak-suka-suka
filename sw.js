@@ -57,9 +57,8 @@ self.addEventListener(
 
         event.notification.close();
 
-        const url =
-            event.notification.data?.url ||
-            "/admin.html";
+        const adminUrl =
+            "https://allanakuba0804-hash.github.io/lapak-suka-suka/admin.html";
 
         event.waitUntil(
 
@@ -71,15 +70,18 @@ self.addEventListener(
                 for (const client of clientList) {
 
                     if (
-                        client.url.includes("admin.html") &&
+                        client.url.includes(
+                            "allanakuba0804-hash.github.io/lapak-suka-suka/admin.html"
+                        ) &&
                         "focus" in client
                     ) {
                         return client.focus();
                     }
+
                 }
 
                 if (clients.openWindow) {
-                    return clients.openWindow(url);
+                    return clients.openWindow(adminUrl);
                 }
 
             })
