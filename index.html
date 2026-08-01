@@ -633,7 +633,7 @@
         // DEFAULT STORE PAYMENT SETTINGS WITH QRIS IMAGE FROM LOKAL FOLDER "img/Qris.png"
         let storePaymentConfig = {
             qrisImg: "img/Qris.png",
-            bankName: "BCA",
+            bankName: "BNI",
             bankAccount: "8830192831",
             bankHolder: "Lapak Suka Suka"
         };
@@ -1170,13 +1170,40 @@
         const { data: todayOrders } = await client
             .from("orders")
             .select("id")
-            .gte("created_at", `${year}-${month}-${day}T00:00:00`)
-            .lt("created_at", `${year}-${month}-${day}T23:59:59`);
+            .gte(
+                "created_at",
+                `${year}-${month}-${day}T00:00:00`
+            )
+            .lt(
+                "created_at",
+                `${year}-${month}-${day}T23:59:59`
+            );
 
-        const orderNumber = String((todayOrders?.length || 0) + 1).padStart(3, "0");
+        let orderNumber =
+            (todayOrders?.length || 0) + 1;
 
-        const orderCode = `LSS-${dateString}-${orderNumber}`;
+        let orderCode =
+            `LSS-${dateString}-${String(orderNumber).padStart(3, "0")}`;
 
+        // Pastikan order_code belum pernah digunakan
+        while (true) {
+
+            const { data: existingOrder } =
+                await client
+                    .from("orders")
+                    .select("id")
+                    .eq("order_code", orderCode)
+                    .maybeSingle();
+
+            if (!existingOrder) {
+                break;
+            }
+
+            orderNumber++;
+
+            orderCode =
+                `LSS-${dateString}-${String(orderNumber).padStart(3, "0")}`;
+        }
         // ===== SIMPAN KE DATABASE =====
         const { error } = await client
         .from("orders")
