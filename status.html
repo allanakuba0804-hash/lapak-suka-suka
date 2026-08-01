@@ -257,15 +257,15 @@
         </div>
 
         <textarea
-
             id="review-comment"
-
             class="w-full border rounded-2xl p-4 mt-6 resize-none"
-
             rows="4"
-
+            maxlength="500"
             placeholder="Tulis ulasanmu..."></textarea>
 
+        <div class="text-right text-xs text-gray-400 mt-2">
+            <span id="review-char-count">0</span>/500 karakter
+        </div>
         <button
 
             id="submit-review"
@@ -914,29 +914,87 @@ stars.forEach(star=>{
     });
 
 });
+    // =====================================
+    // HITUNG KARAKTER REVIEW
+    // =====================================
+
+const reviewComment =
+    document.getElementById("review-comment");
+
+const reviewCharCount =
+    document.getElementById("review-char-count");
+
+if (reviewComment && reviewCharCount) {
+
+    reviewComment.addEventListener("input", () => {
+
+        reviewCharCount.textContent =
+            reviewComment.value.length;
+
+    });
+
+}
+
 // =====================================
 // TAMPILKAN REVIEW SAAT STATUS SELESAI
 // =====================================
 
-function showReviewSection(status){
+async function showReviewSection(status){
 
     const review =
-    document.getElementById(
-        "review-section"
-    );
+        document.getElementById("review-section");
 
-    if(!review)return;
+    if(!review) return;
 
-    if(status==="Selesai"){
-
-        review.classList.remove("hidden");
-
-    }else{
-
+    // Bukan selesai → sembunyikan
+    if(status !== "Selesai"){
         review.classList.add("hidden");
-
+        return;
     }
 
+    // Pastikan order sudah tersedia
+    if(!currentOrderCode){
+        review.classList.add("hidden");
+        return;
+    }
+
+    try {
+
+        const { data: existing, error } =
+            await client
+            .from("reviews")
+            .select("id")
+            .eq("order_code", currentOrderCode)
+            .maybeSingle();
+
+        if(error){
+            console.error(
+                "Gagal mengecek review:",
+                error
+            );
+
+            review.classList.add("hidden");
+            return;
+        }
+
+        // SUDAH REVIEW → WAJIB SEMBUNYIKAN
+        if(existing){
+            review.classList.add("hidden");
+            return;
+        }
+
+        // BELUM REVIEW → TAMPILKAN
+        review.classList.remove("hidden");
+
+    } catch(error){
+
+        console.error(
+            "Error pengecekan review:",
+            error
+        );
+
+        review.classList.add("hidden");
+    }
 }
 // =====================================
 // SUBMIT REVIEW
