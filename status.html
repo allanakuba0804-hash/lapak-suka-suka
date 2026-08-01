@@ -719,9 +719,9 @@ console.log("NOTIF ERROR:", notifError);
     document.getElementById("status").innerText =
         "Selesai";
 
-    updateTimeline("Selesai");
-    updateTombolSelesai("Selesai");
-
+        updateTimeline("Selesai");
+        updateTombolSelesai("Selesai");
+        showReviewSection("Selesai");
     alert(
         "✅ Pesanan berhasil dikonfirmasi selesai!"
     );
@@ -863,6 +863,9 @@ function startRealtime() {
                     );
 
                     updateTombolSelesai(
+                        payload.new.status
+                    );
+                    showReviewSection(
                         payload.new.status
                     );
                 }
