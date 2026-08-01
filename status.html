@@ -40,12 +40,28 @@
         <p><b>No HP :</b> <span id="hp"></span></p>
         <p><b>Total :</b> Rp <span id="total"></span></p>
         <p><b>Pembayaran :</b> <span id="payment"></span></p>
-        <p><b>Status :</b>
+        <p>
+            <b>Status :</b>
             <span
                 id="status"
                 class="font-bold text-green-600"
             ></span>
         </p>
+
+        <div id="selesaiContainer" class="hidden mt-4">
+
+            <p class="text-sm text-gray-600 mb-2">
+                Pesanan sudah kamu terima?
+            </p>
+
+    <button
+        onclick="konfirmasiPesananSelesai()"
+        class="w-full bg-green-600 hover:bg-green-700 text-white font-bold p-3 rounded-lg"
+    >
+        ✅ Pesanan Selesai
+    </button>
+
+</div>
     </div>
 
 </div>
@@ -62,9 +78,11 @@ const client = supabase.createClient(
         // Variabel baru
         let realtimeChannel = null;
         let currentOrderCode = "";
+
 async function cekStatus() {
 
-    const kode = document.getElementById("orderCode").value.trim();
+    const kode =
+        document.getElementById("orderCode").value.trim();
 
     const { data, error } = await client
         .from("orders")
@@ -72,36 +90,145 @@ async function cekStatus() {
         .eq("order_code", kode);
 
     if (error || !data || data.length === 0) {
+
         alert("Nomor pesanan tidak ditemukan");
         return;
     }
 
-    // Ambil data pesanan pertama
     const order = data[0];
-    currentOrderCode = order.order_code;
-    // Tampilkan hasil
-    document.getElementById("hasil").classList.remove("hidden");
 
-    document.getElementById("kode").innerText = order.order_code;
-    document.getElementById("nama").innerText = order.customer_name;
-    document.getElementById("hp").innerText = order.phone;
-    document.getElementById("payment").innerText = order.payment_method;
+    currentOrderCode = order.order_code;
+
+    document
+        .getElementById("hasil")
+        .classList.remove("hidden");
+
+    document.getElementById("kode").innerText =
+        order.order_code;
+
+    document.getElementById("nama").innerText =
+        order.customer_name;
+
+    document.getElementById("hp").innerText =
+        order.phone;
+
+    document.getElementById("payment").innerText =
+        order.payment_method;
+
     document.getElementById("total").innerText =
         Number(order.total).toLocaleString("id-ID");
-    document.getElementById("status").innerText = order.status;
+
+    document.getElementById("status").innerText =
+        order.status;
+
+    updateTombolSelesai(order.status);
+
     startRealtime();
 }
+
+
 // ===============================
-// Realtime
+// TOMBOL PESANAN SELESAI
 // ===============================
+
+function updateTombolSelesai(status) {
+
+    const container =
+        document.getElementById("selesaiContainer");
+
+    if (!container) return;
+
+    if (status === "Dikirim") {
+
+        container.classList.remove("hidden");
+
+    } else {
+
+        container.classList.add("hidden");
+    }
+}
+
+
+// ===============================
+// CUSTOMER KONFIRMASI SELESAI
+// ===============================
+
+async function konfirmasiPesananSelesai() {
+
+    if (!currentOrderCode) {
+
+        alert("Nomor pesanan tidak ditemukan.");
+        return;
+    }
+
+    const yakin = confirm(
+        "Apakah pesanan sudah kamu terima?\n\n" +
+        "Tekan OK jika pesanan sudah sampai."
+    );
+
+    if (!yakin) return;
+
+    const { data, error } = await client
+        .from("orders")
+        .update({
+            status: "Selesai"
+        })
+        .eq("order_code", currentOrderCode)
+        .eq("status", "Dikirim")
+        .select();
+
+    if (error) {
+
+        console.error(
+            "Gagal mengonfirmasi pesanan:",
+            error
+        );
+
+        alert(
+            "❌ Gagal mengonfirmasi pesanan:\n" +
+            error.message
+        );
+
+        return;
+    }
+
+    if (!data || data.length === 0) {
+
+        alert(
+            "Pesanan tidak dapat dikonfirmasi. " +
+            "Mungkin statusnya sudah berubah."
+        );
+
+        return;
+    }
+
+    document.getElementById("status").innerText =
+        "Selesai";
+
+    updateTombolSelesai("Selesai");
+
+    alert(
+        "✅ Pesanan berhasil dikonfirmasi selesai!"
+    );
+}
+
+
+// ===============================
+// REALTIME
+// ===============================
+
 function startRealtime() {
 
     if (realtimeChannel) {
-        client.removeChannel(realtimeChannel);
+
+        client.removeChannel(
+            realtimeChannel
+        );
     }
 
     realtimeChannel = client
         .channel("orders-status")
+
         .on(
             "postgres_changes",
             {
@@ -109,17 +236,26 @@ function startRealtime() {
                 schema: "public",
                 table: "orders"
             },
+
             (payload) => {
 
-                if (payload.new.order_code === currentOrderCode) {
+                if (
+                    payload.new.order_code ===
+                    currentOrderCode
+                ) {
 
-                    document.getElementById("status").innerText =
+                    document.getElementById(
+                        "status"
+                    ).innerText =
                         payload.new.status;
 
+                    updateTombolSelesai(
+                        payload.new.status
+                    );
                 }
-
             }
         )
+
         .subscribe();
 }
 </script>
