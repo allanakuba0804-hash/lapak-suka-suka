@@ -573,6 +573,57 @@
         <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
         <span id="toast-message" class="text-sm font-semibold">Pesanan ditambahkan!</span>
     </div>
+<!-- ====================================== -->
+<!-- CUSTOMER REVIEWS -->
+<!-- ====================================== -->
+
+<section id="reviews" class="py-16 bg-orange-50/60">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        <div class="text-center mb-10">
+            <span class="inline-block px-4 py-1.5 rounded-full bg-orange-100 text-orange-600 text-xs font-bold mb-3">
+                ⭐ ULASAN PELANGGAN
+            </span>
+
+            <h2 class="text-3xl md:text-4xl font-black text-slate-800">
+                Kata Mereka Tentang Kami
+            </h2>
+
+            <p class="text-slate-500 mt-3">
+                Pengalaman pelanggan Lapak Suka Suka
+            </p>
+        </div>
+
+        <!-- RATING SUMMARY -->
+        <div class="bg-white rounded-3xl shadow-sm border border-orange-100 p-6 mb-8 text-center">
+
+            <div class="text-5xl font-black text-orange-500" id="average-rating">
+                0.0
+            </div>
+
+            <div id="average-stars" class="text-2xl mt-2">
+                ☆☆☆☆☆
+            </div>
+
+            <p class="text-sm text-slate-500 mt-2">
+                <span id="review-count">0</span> ulasan pelanggan
+            </p>
+
+        </div>
+
+        <!-- REVIEW LIST -->
+        <div
+            id="reviews-list"
+            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+
+            <div class="col-span-full text-center text-slate-400 py-8">
+                Memuat ulasan...
+            </div>
+
+        </div>
+
+    </div>
+</section>
 
     <!-- FOOTER -->
     <footer class="mt-auto bg-slate-900 text-slate-400 py-12 border-t border-slate-800">
@@ -1445,5 +1496,147 @@
                 });
             }
 </script>
+
+<script>
+    // ==========================================
+    // CUSTOMER REVIEWS
+    // ==========================================
+
+    async function loadCustomerReviews() {
+
+        const reviewsList =
+            document.getElementById("reviews-list");
+
+        const averageRating =
+            document.getElementById("average-rating");
+
+        const averageStars =
+            document.getElementById("average-stars");
+
+        const reviewCount =
+            document.getElementById("review-count");
+
+        if (!reviewsList) return;
+
+        try {
+
+            const { data, error } = await client
+                .from("reviews")
+                .select("order_code, rating, comment")
+                .order("id", { ascending: false });
+
+            if (error) {
+                console.error("Gagal mengambil review:", error);
+                reviewsList.innerHTML = `
+                    <div class="col-span-full text-center text-red-400 py-8">
+                        Gagal memuat ulasan.
+                    </div>
+                `;
+                return;
+            }
+
+            if (!data || data.length === 0) {
+
+                averageRating.textContent = "0.0";
+                averageStars.textContent = "☆☆☆☆☆";
+                reviewCount.textContent = "0";
+
+                reviewsList.innerHTML = `
+                    <div class="col-span-full text-center text-slate-400 py-8">
+                        Belum ada ulasan pelanggan.
+                    </div>
+                `;
+
+                return;
+            }
+
+            // ===============================
+            // HITUNG RATING RATA-RATA
+            // ===============================
+
+            const totalRating =
+                data.reduce(
+                    (sum, review) =>
+                        sum + Number(review.rating || 0),
+                    0
+                );
+
+            const average =
+                totalRating / data.length;
+
+            averageRating.textContent =
+                average.toFixed(1);
+
+            const roundedAverage =
+                Math.round(average);
+
+            averageStars.textContent =
+                "★".repeat(roundedAverage) +
+                "☆".repeat(5 - roundedAverage);
+
+            reviewCount.textContent =
+                data.length;
+
+            // ===============================
+            // TAMPILKAN REVIEW
+            // ===============================
+
+            reviewsList.innerHTML =
+                data.map(review => {
+
+                    const rating =
+                        Number(review.rating) || 0;
+
+                    const stars =
+                        "★".repeat(rating) +
+                        "☆".repeat(5 - rating);
+
+                    const comment =
+                        review.comment
+                        ? review.comment
+                        : "Tidak ada komentar.";
+
+                    return `
+                        <div class="bg-white rounded-3xl p-6 shadow-sm border border-orange-100">
+
+                            <div class="text-xl text-orange-400 tracking-wide">
+                                ${stars}
+                            </div>
+
+                            <p class="mt-4 text-slate-600 leading-relaxed">
+                                "${comment}"
+                            </p>
+
+                            <div class="mt-5 pt-4 border-t border-slate-100">
+
+                                <span class="text-xs font-bold text-slate-400">
+                                    Pelanggan Lapak Suka Suka
+                                </span>
+
+                            </div>
+
+                        </div>
+                    `;
+
+                }).join("");
+
+        } catch (error) {
+
+            console.error(
+                "Error load customer reviews:",
+                error
+            );
+
+        }
+
+    }
+
+    // Jalankan setelah halaman selesai dimuat
+    window.addEventListener(
+        "load",
+        loadCustomerReviews
+    );
+</script>
+
 </body>
 </html>
