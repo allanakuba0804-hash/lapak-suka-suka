@@ -14,7 +14,7 @@ self.addEventListener("push", function (event) {
     } catch (error) {
         console.error("Gagal membaca push:", error);
     }
-
+    console.log("📦 DATA PUSH:", data);
     const title =
         data.title || "Lapak Suka Suka";
 
