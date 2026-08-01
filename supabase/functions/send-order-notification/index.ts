@@ -139,13 +139,51 @@ Deno.serve(async (req: Request) => {
     // AMBIL SUBSCRIPTION
     // ==============================
 
+    const eventType =
+      body.event || "new_order";
+
+    let subscriptionUrl =
+      SUPABASE_URL +
+      "/rest/v1/push_subscriptions?select=*";
+
+    if (
+      eventType === "status_changed" ||
+      eventType === "completed"
+    ) {
+
+      const orderCode =
+        order.order_code;
+
+      if (!orderCode) {
+
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: "order_code tidak ditemukan"
+          }),
+          {
+            status: 400,
+            headers: {
+              ...corsHeaders,
+              "Content-Type": "application/json"
+            }
+          }
+        );
+      }
+
+      subscriptionUrl =
+        SUPABASE_URL +
+        "/rest/v1/push_subscriptions" +
+        "?select=*" +
+        "&order_code=eq." +
+        encodeURIComponent(orderCode);
+    }
+
     const response =
       await fetch(
-        SUPABASE_URL +
-        "/rest/v1/push_subscriptions?select=*",
+        subscriptionUrl,
         {
           headers: {
-
             apikey:
               SUPABASE_SERVICE_ROLE_KEY,
 
@@ -155,7 +193,6 @@ Deno.serve(async (req: Request) => {
           }
         }
       );
-
 
     if (!response.ok) {
 
@@ -168,17 +205,23 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-
     const subscriptions =
       await response.json();
 
+    console.log(
+      "EVENT:",
+      eventType
+    );
+
+    console.log(
+      "ORDER CODE:",
+      order.order_code
+    );
 
     console.log(
       "JUMLAH SUBSCRIPTION:",
       subscriptions.length
     );
-
-
     // ==============================
     // ISI NOTIFIKASI
     // ==============================
@@ -200,13 +243,71 @@ Deno.serve(async (req: Request) => {
       order.order_code ||
       order.id;
 
-
-const eventType =
-  body.event || "new_order";
-
 let notification;
 
-if (eventType === "completed") {
+if (eventType === "status_changed") {
+
+  let title = "";
+  let message = "";
+
+  if (order.status === "Diproses") {
+
+    title = "🔄 Pesanan Diproses";
+
+    message =
+      nama +
+      "\nPesanan #" +
+      kode +
+      " sedang diproses oleh toko.";
+
+  } else if (order.status === "Dikirim") {
+
+    title = "🛵 Pesanan Dikirim";
+
+    message =
+      nama +
+      "\nPesanan #" +
+      kode +
+      " sedang diantar.";
+
+  } else if (order.status === "Selesai") {
+
+    title = "✅ Pesanan Selesai";
+
+    message =
+      nama +
+      "\nPesanan #" +
+      kode +
+      " telah selesai.";
+
+  } else {
+
+    title = "🔔 Status Pesanan";
+
+    message =
+      nama +
+      "\nPesanan #" +
+      kode +
+      "\nStatus: " +
+      order.status;
+  }
+
+  notification =
+    JSON.stringify({
+
+      title: title,
+
+      body: message,
+
+      data: {
+
+        url:
+          "https://allanakuba0804-hash.github.io/lapak-suka-suka/status.html"
+      }
+    });
+
+
+} else if (eventType === "completed") {
 
   notification =
     JSON.stringify({
@@ -226,6 +327,7 @@ if (eventType === "completed") {
           "https://allanakuba0804-hash.github.io/lapak-suka-suka/admin.html"
       }
     });
+
 
 } else {
 

@@ -550,24 +550,59 @@ alert(
             loadOrders();
         }
         // Tambahkan di bawah sini
-        async function updateStatus(id, status) {
+async function updateStatus(id, status) {
 
-            const { data, error } = await client
-                .from("orders")
-                .update({ status: status })
-                .eq("id", id)
-                .select();
+    const { data, error } = await client
+        .from("orders")
+        .update({
+            status: status
+        })
+        .eq("id", id)
+        .select()
+        .single();
 
-            console.log("DATA UPDATE:", data);
-            console.log("ERROR UPDATE:", error);
+    console.log("DATA UPDATE:", data);
+    console.log("ERROR UPDATE:", error);
 
-            if (error) {
-                alert(error.message);
-                return;
+    if (error) {
+
+        alert(error.message);
+        return;
+    }
+
+    // ===============================
+    // KIRIM NOTIF STATUS KE CUSTOMER
+    // ===============================
+
+    if (data && data.order_code) {
+
+        const {
+            data: notifData,
+            error: notifError
+        } = await client.functions.invoke(
+            "send-order-notification",
+            {
+                body: {
+                    event: "status_changed",
+                    record: data
+                }
             }
+        );
 
-            loadOrders();
-        }
+        console.log(
+            "STATUS NOTIF DATA:",
+            notifData
+        );
+
+        console.log(
+            "STATUS NOTIF ERROR:",
+            notifError
+        );
+    }
+
+    loadOrders();
+}
+
 function showNewOrderNotification(order) {
 
     console.log("🔥 NOTIF WHATSAPP:", order);
