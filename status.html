@@ -9,62 +9,329 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
-<body class="bg-gray-100">
+<body class="min-h-screen overflow-x-hidden text-[#3d241b]">
 
-<div class="max-w-lg mx-auto mt-10 bg-white p-6 rounded-xl shadow">
+<!-- Decorative food-themed background -->
+<div class="fixed inset-0 -z-10 overflow-hidden bg-[#fff4df]">
+    <div class="absolute -left-24 -top-24 h-72 w-72 rounded-full bg-[#f6d6a6]/60 blur-2xl"></div>
+    <div class="absolute -right-28 top-20 h-80 w-80 rounded-full bg-[#ffe1b5]/70 blur-2xl"></div>
+    <div class="absolute -left-20 bottom-10 h-80 w-80 rounded-full bg-[#dce7b6]/50 blur-2xl"></div>
+    <div class="absolute -right-24 bottom-0 h-96 w-96 rounded-full bg-[#f5c98d]/50 blur-2xl"></div>
 
-    <h1 class="text-2xl font-bold text-center mb-6">
-        Cek Status Pesanan
-    </h1>
+    <div class="absolute left-3 top-10 rotate-[-10deg] text-7xl opacity-40 select-none">🥟</div>
+    <div class="absolute right-6 top-24 rotate-[10deg] text-7xl opacity-45 select-none">🥢</div>
+    <div class="absolute left-5 bottom-20 rotate-[8deg] text-7xl opacity-35 select-none">🥟</div>
+    <div class="absolute right-4 bottom-28 rotate-[-8deg] text-7xl opacity-45 select-none">🥠</div>
 
-    <input
-        type="text"
-        id="orderCode"
-        placeholder="Masukkan Nomor Pesanan"
-        class="w-full border rounded-lg p-3"
-    >
+    <div class="absolute left-[8%] top-[30%] text-3xl opacity-30">✦</div>
+    <div class="absolute right-[10%] top-[48%] text-4xl opacity-30">✦</div>
+    <div class="absolute left-[12%] bottom-[35%] text-2xl opacity-30">• • •</div>
+    <div class="absolute right-[12%] bottom-[42%] text-2xl opacity-30">• •</div>
+</div>
 
-    <button
-        onclick="cekStatus()"
-        class="w-full mt-4 bg-green-600 text-white p-3 rounded-lg"
-    >
-        Cek Status
-    </button>
+<main class="min-h-screen px-4 py-8 sm:px-6 sm:py-12">
+    <div class="mx-auto w-full max-w-xl">
 
-    <div
-        id="hasil"
-        class="mt-6 hidden border rounded-lg p-4 bg-gray-50"
-    >
-        <p><b>Nomor Pesanan :</b> <span id="kode"></span></p>
-        <p><b>Nama :</b> <span id="nama"></span></p>
-        <p><b>No HP :</b> <span id="hp"></span></p>
-        <p><b>Total :</b> Rp <span id="total"></span></p>
-        <p><b>Pembayaran :</b> <span id="payment"></span></p>
-        <p>
-            <b>Status :</b>
-            <span
-                id="status"
-                class="font-bold text-green-600"
-            ></span>
-        </p>
+        <!-- Header -->
+        <div class="mb-6 text-center">
+            <div class="mb-3 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-white/90 shadow-lg ring-1 ring-[#e8c99d]">
+                <span class="text-3xl">🍱</span>
+            </div>
 
-        <div id="selesaiContainer" class="hidden mt-4">
-
-            <p class="text-sm text-gray-600 mb-2">
-                Pesanan sudah kamu terima?
+            <p class="mb-1 text-xs font-extrabold uppercase tracking-[0.25em] text-[#9b6a3b]">
+                Lapak Suka Suka
             </p>
 
-    <button
-        onclick="konfirmasiPesananSelesai()"
-        class="w-full bg-green-600 hover:bg-green-700 text-white font-bold p-3 rounded-lg"
-    >
-        ✅ Pesanan Selesai
-    </button>
+            <h1 class="text-3xl font-black tracking-tight text-[#3d241b] sm:text-4xl">
+                Cek Status Pesanan
+            </h1>
 
-</div>
+            <p class="mt-2 text-sm font-medium text-[#7b5a45]">
+                Pantau perjalanan pesananmu sampai selesai ✨
+            </p>
+        </div>
+
+        <!-- Main card -->
+        <section class="rounded-[2rem] border border-white/80 bg-white/90 p-5 shadow-[0_20px_60px_rgba(117,75,35,0.15)] backdrop-blur-xl sm:p-7">
+
+            <!-- Search -->
+            <div>
+                <label for="orderCode" class="mb-2 block text-sm font-extrabold text-[#4b2d20]">
+                    Nomor Pesanan
+                </label>
+
+                <input
+                    type="text"
+                    id="orderCode"
+                    placeholder="Contoh: LSS-20260802-002"
+                    autocomplete="off"
+                    class="w-full rounded-2xl border-2 border-[#ead8c0] bg-[#fffaf3] px-4 py-3.5 text-sm font-semibold text-[#3d241b] outline-none transition focus:border-[#15935f] focus:ring-4 focus:ring-[#15935f]/10"
+                >
+
+                <button
+                    onclick="cekStatus()"
+                    class="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#079455] px-4 py-3.5 text-sm font-black text-white shadow-lg shadow-[#079455]/20 transition hover:-translate-y-0.5 hover:bg-[#067d48] active:translate-y-0"
+                >
+                    <span>🔎</span>
+                    <span>Cek Status</span>
+                </button>
+            </div>
+
+            <!-- Result -->
+            <div id="hasil" class="mt-7 hidden">
+
+                <!-- Order heading -->
+                <div class="mb-5 flex items-center justify-between gap-3">
+                    <div>
+                        <p class="text-[10px] font-black uppercase tracking-[0.18em] text-[#a27851]">
+                            Detail Pesanan
+                        </p>
+                        <p id="kode" class="mt-1 text-lg font-black text-[#3d241b]"></p>
+                    </div>
+
+                    <div id="statusBadge"
+                         class="shrink-0 rounded-full bg-[#e8f8ef] px-3 py-1.5 text-xs font-black text-[#07834d]">
+                        <span id="status">-</span>
+                    </div>
+                </div>
+
+                <!-- Info -->
+                <div class="rounded-2xl border border-[#ecd8bb] bg-[#fffaf2] p-4">
+                    <div class="grid gap-3 text-sm">
+                        <div class="flex items-center gap-3">
+                            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#f4e3cb]">👤</span>
+                            <div>
+                                <p class="text-[10px] font-bold uppercase tracking-wider text-[#9a7656]">Nama</p>
+                                <p id="nama" class="font-extrabold text-[#43291d]"></p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-3">
+                            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#f4e3cb]">📞</span>
+                            <div>
+                                <p class="text-[10px] font-bold uppercase tracking-wider text-[#9a7656]">No HP</p>
+                                <p id="hp" class="font-extrabold text-[#43291d]"></p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-3">
+                            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#f4e3cb]">💰</span>
+                            <div>
+                                <p class="text-[10px] font-bold uppercase tracking-wider text-[#9a7656]">Total</p>
+                                <p class="font-extrabold text-[#43291d]">Rp <span id="total"></span></p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-3">
+                            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#f4e3cb]">💳</span>
+                            <div>
+                                <p class="text-[10px] font-bold uppercase tracking-wider text-[#9a7656]">Pembayaran</p>
+                                <p id="payment" class="font-extrabold text-[#43291d]"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Timeline -->
+                <div class="mt-6 rounded-2xl border border-[#ecd8bb] bg-white p-5">
+                    <div class="mb-5">
+                        <p class="text-[10px] font-black uppercase tracking-[0.18em] text-[#a27851]">
+                            Perjalanan Pesanan
+                        </p>
+                        <p id="timelineMessage" class="mt-1 text-sm font-bold text-[#5e4334]">
+                            Pesananmu sedang dipersiapkan.
+                        </p>
+                    </div>
+
+                    <div id="statusTimeline" class="space-y-0">
+
+                        <div class="timeline-step" data-step="0">
+                            <div class="flex gap-3">
+                                <div class="timeline-marker-wrap">
+                                    <div class="timeline-marker">✓</div>
+                                    <div class="timeline-line"></div>
+                                </div>
+                                <div class="pb-5">
+                                    <p class="timeline-title">Pesanan Diterima</p>
+                                    <p class="timeline-desc">Pesanan berhasil masuk ke sistem.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="timeline-step" data-step="1">
+                            <div class="flex gap-3">
+                                <div class="timeline-marker-wrap">
+                                    <div class="timeline-marker">2</div>
+                                    <div class="timeline-line"></div>
+                                </div>
+                                <div class="pb-5">
+                                    <p class="timeline-title">Sedang Diproses</p>
+                                    <p class="timeline-desc">Pesanan sedang disiapkan.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="timeline-step" data-step="2">
+                            <div class="flex gap-3">
+                                <div class="timeline-marker-wrap">
+                                    <div class="timeline-marker">3</div>
+                                    <div class="timeline-line"></div>
+                                </div>
+                                <div class="pb-5">
+                                    <p class="timeline-title">Sedang Dikirim</p>
+                                    <p class="timeline-desc">Pesanan sedang menuju tempatmu.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="timeline-step" data-step="3">
+                            <div class="flex gap-3">
+                                <div class="timeline-marker-wrap">
+                                    <div class="timeline-marker">✓</div>
+                                </div>
+                                <div>
+                                    <p class="timeline-title">Pesanan Selesai</p>
+                                    <p class="timeline-desc">Pesanan sudah diterima. Selamat menikmati! 😋</p>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Customer confirmation -->
+                <div id="selesaiContainer" class="hidden mt-5 rounded-2xl border border-[#bce8d0] bg-[#effbf4] p-4">
+                    <p class="text-sm font-bold text-[#35604a]">
+                        Pesanan sudah sampai?
+                    </p>
+                    <p class="mt-1 text-xs text-[#5f7d6c]">
+                        Konfirmasi agar status pesanan berubah menjadi selesai.
+                    </p>
+
+                    <button
+                        onclick="konfirmasiPesananSelesai()"
+                        class="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#079455] px-4 py-3.5 text-sm font-black text-white shadow-lg shadow-[#079455]/20 transition hover:bg-[#067d48]"
+                    >
+                        <span>✅</span>
+                        <span>Pesanan Sudah Sampai</span>
+                    </button>
+                </div>
+
+            </div>
+        </section>
+
+        <p class="mt-5 text-center text-xs font-semibold text-[#9a7656]">
+            Dibuat dengan ❤️ oleh Lapak Suka Suka
+        </p>
     </div>
+</main>
 
-</div>
+<style>
+    .timeline-step {
+        transition: transform .25s ease, opacity .25s ease;
+    }
+
+    .timeline-marker-wrap {
+        position: relative;
+        width: 38px;
+        min-width: 38px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .timeline-marker {
+        width: 34px;
+        height: 34px;
+        border-radius: 9999px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f3eee7;
+        color: #a28a75;
+        font-size: 12px;
+        font-weight: 900;
+        border: 2px solid #e7d9c8;
+        position: relative;
+        z-index: 2;
+        transition: all .35s ease;
+    }
+
+    .timeline-line {
+        width: 3px;
+        flex: 1;
+        min-height: 38px;
+        background: #eadfd2;
+        border-radius: 9999px;
+        transition: background .45s ease;
+    }
+
+    .timeline-title {
+        color: #8b7667;
+        font-size: 14px;
+        font-weight: 900;
+        transition: color .35s ease;
+    }
+
+    .timeline-desc {
+        color: #a58f7f;
+        font-size: 11px;
+        margin-top: 2px;
+        transition: color .35s ease;
+    }
+
+    .timeline-step.done .timeline-marker {
+        background: #079455;
+        border-color: #079455;
+        color: white;
+        box-shadow: 0 0 0 5px rgba(7,148,85,.10);
+    }
+
+    .timeline-step.done .timeline-line {
+        background: #079455;
+    }
+
+    .timeline-step.done .timeline-title {
+        color: #087b4a;
+    }
+
+    .timeline-step.done .timeline-desc {
+        color: #668b79;
+    }
+
+    .timeline-step.active {
+        transform: translateX(4px);
+    }
+
+    .timeline-step.active .timeline-marker {
+        background: #f59e0b;
+        border-color: #f59e0b;
+        color: white;
+        box-shadow: 0 0 0 0 rgba(245,158,11,.35);
+        animation: pulseStatus 1.7s infinite;
+    }
+
+    .timeline-step.active .timeline-title {
+        color: #b85d0a;
+    }
+
+    .timeline-step.active .timeline-desc {
+        color: #7d6654;
+    }
+
+    @keyframes pulseStatus {
+        0% { box-shadow: 0 0 0 0 rgba(245,158,11,.35); }
+        70% { box-shadow: 0 0 0 10px rgba(245,158,11,0); }
+        100% { box-shadow: 0 0 0 0 rgba(245,158,11,0); }
+    }
+
+    @media (max-width: 420px) {
+        main { padding-top: 24px; padding-bottom: 24px; }
+        h1 { font-size: 1.75rem; }
+        .timeline-title { font-size: 13px; }
+        .timeline-desc { font-size: 10px; }
+    }
+</style>
 
 <script>
 
@@ -101,6 +368,99 @@ function urlBase64ToUint8Array(base64String) {
         )
     );
 }
+
+// ===============================
+// TIMELINE STATUS PESANAN
+// ===============================
+
+function getStatusStep(status) {
+    const map = {
+        "Pending": 0,
+        "Diproses": 1,
+        "Dikirim": 2,
+        "Selesai": 3
+    };
+
+    return map[status] ?? 0;
+}
+
+function updateTimeline(status) {
+
+    const steps =
+        document.querySelectorAll(".timeline-step");
+
+    const currentStep =
+        getStatusStep(status);
+
+    const message =
+        document.getElementById("timelineMessage");
+
+    const messages = [
+        "Pesananmu sudah diterima dan menunggu diproses.",
+        "Pesananmu sedang disiapkan dengan penuh perhatian.",
+        "Pesananmu sedang dalam perjalanan. Siap-siap menerima! 🚚",
+        "Pesanan sudah selesai. Selamat menikmati! 😋"
+    ];
+
+    steps.forEach((step, index) => {
+
+        step.classList.remove(
+            "done",
+            "active"
+        );
+
+        if (index < currentStep) {
+            step.classList.add("done");
+        }
+
+        if (index === currentStep) {
+
+            if (status === "Selesai") {
+                step.classList.add("done");
+            } else {
+                step.classList.add("active");
+            }
+        }
+    });
+
+    if (message) {
+        message.innerText =
+            messages[currentStep] ||
+            "Pesananmu sedang diproses.";
+    }
+
+    const badge =
+        document.getElementById("statusBadge");
+
+    if (badge) {
+
+        badge.className =
+            "shrink-0 rounded-full px-3 py-1.5 text-xs font-black transition-all";
+
+        if (status === "Selesai") {
+
+            badge.classList.add(
+                "bg-[#e8f8ef]",
+                "text-[#07834d]"
+            );
+
+        } else if (status === "Dikirim") {
+
+            badge.classList.add(
+                "bg-[#fff1df]",
+                "text-[#b85d0a]"
+            );
+
+        } else {
+
+            badge.classList.add(
+                "bg-[#eef5ff]",
+                "text-[#3568a8]"
+            );
+        }
+    }
+}
+
 async function cekStatus() {
 
     const kode =
@@ -143,6 +503,7 @@ async function cekStatus() {
     document.getElementById("status").innerText =
         order.status;
 
+    updateTimeline(order.status);
     updateTombolSelesai(order.status);
 
     startRealtime();
@@ -242,6 +603,7 @@ console.log("NOTIF ERROR:", notifError);
     document.getElementById("status").innerText =
         "Selesai";
 
+    updateTimeline("Selesai");
     updateTombolSelesai("Selesai");
 
     alert(
@@ -379,6 +741,10 @@ function startRealtime() {
                         "status"
                     ).innerText =
                         payload.new.status;
+
+                    updateTimeline(
+                        payload.new.status
+                    );
 
                     updateTombolSelesai(
                         payload.new.status
