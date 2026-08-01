@@ -201,6 +201,20 @@ async function konfirmasiPesananSelesai() {
 
         return;
     }
+        // ⬇️ BARU DI SINI
+        const { data: notifData, error: notifError } =
+            await client.functions.invoke(
+                "send-order-notification",
+                {
+                    body: {
+                        event: "completed",
+                        record: data[0]
+                    }
+                }
+            );
+
+console.log("NOTIF DATA:", notifData);
+console.log("NOTIF ERROR:", notifError);
 
     document.getElementById("status").innerText =
         "Selesai";
