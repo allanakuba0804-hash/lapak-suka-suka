@@ -804,6 +804,11 @@ async function registerCustomerPush(orderCode) {
                 )
                 .select();
 
+        alert(
+            "HASIL SIMPAN PUSH:\n" +
+            JSON.stringify({ data, error })
+        );
+
         if (error) {
 
             console.error(
