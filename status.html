@@ -768,6 +768,13 @@ async function registerCustomerPush(orderCode) {
                 });
         }
 
+        // CEK HASIL AKHIR
+        if (subscription) {
+            alert("🔔 PUSH TERDAFTAR DI PERANGKAT INI");
+        } else {
+            alert("❌ PUSH GAGAL TERDAFTAR DI PERANGKAT INI");
+        }
+
         const subscriptionJson =
             subscription.toJSON();
 
