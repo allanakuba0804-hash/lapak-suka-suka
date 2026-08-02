@@ -778,6 +778,14 @@ async function registerCustomerPush(orderCode) {
         const subscriptionJson =
             subscription.toJSON();
 
+        const { data: sessionData } =
+            await client.auth.getSession();
+
+        alert(
+            "SESSION:\n" +
+            JSON.stringify(sessionData)
+        );
+
         const { data, error } =
             await client
                 .from("push_subscriptions")
